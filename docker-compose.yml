@@ -4,6 +4,8 @@ services:
     container_name: inept-postgres
     restart: unless-stopped
     environment:
+      # Local development only. Deployed environments authenticate to RDS with
+      # IAM tokens, so no database password exists in AWS at all.
       POSTGRES_USER: inept
       POSTGRES_PASSWORD: localdev
       POSTGRES_DB: inept

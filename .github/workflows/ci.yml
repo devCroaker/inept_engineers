@@ -19,6 +19,12 @@ jobs:
     timeout-minutes: 15
 
     services:
+      # Throwaway database for the test run. This container is created for the
+      # job, is reachable only on localhost inside the runner, holds nothing but
+      # what the tests write, and is destroyed when the job ends. The password
+      # below defines that container rather than granting access to anything, so
+      # it is not a secret. Real credentials belong in repository secrets and
+      # are referenced as ${{ secrets.NAME }}, never written inline here.
       postgres:
         image: postgres:17-alpine
         env:
