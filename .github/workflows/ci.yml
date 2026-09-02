@@ -32,7 +32,7 @@ jobs:
           POSTGRES_PASSWORD: localdev
           POSTGRES_DB: inept
         ports:
-          - 5432:5432
+          - 5433:5432
         options: >-
           --health-cmd "pg_isready -U inept -d inept"
           --health-interval 5s
@@ -40,7 +40,7 @@ jobs:
           --health-retries 10
 
     env:
-      DATABASE_URL: postgresql://inept:localdev@localhost:5432/inept
+      DATABASE_URL: postgresql://inept:localdev@localhost:5433/inept
 
     steps:
       - uses: actions/checkout@v5

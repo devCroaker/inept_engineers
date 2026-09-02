@@ -7,3 +7,7 @@ packages:
 # Required by drizzle-kit, vite, and CDK Lambda bundling.
 allowBuilds:
   esbuild: true
+
+minimumReleaseAgeExclude:
+  - '@aws-sdk/credential-providers@3.1125.0'
+  - '@aws-sdk/rds-signer@3.1125.0'

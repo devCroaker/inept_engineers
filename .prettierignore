@@ -1,0 +1,19 @@
+# Tool-generated files. Formatting these creates diff churn every time the
+# generating tool rewrites them, and in the case of the lockfile risks
+# corrupting a file pnpm owns.
+pnpm-lock.yaml
+pnpm-workspace.yaml
+
+# drizzle-kit regenerates these from the schema.
+packages/db/migrations/
+
+# Code generation output.
+**/*.gen.ts
+
+# Build output.
+dist/
+build/
+.next/
+out/
+cdk.out/
+coverage/
