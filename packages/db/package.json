@@ -10,12 +10,13 @@
     "./schema": "./src/schema/index.ts"
   },
   "scripts": {
+    "ca:fetch": "node scripts/fetch-rds-ca.mjs",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/migrate.ts",
     "db:studio": "drizzle-kit studio",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run --passWithNoTests",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@aws-sdk/rds-signer": "^3.1125.0",

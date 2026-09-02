@@ -12,6 +12,12 @@ import * as schema from "./schema/index.js";
 export type Database = NodePgDatabase<typeof schema>;
 
 /**
+ * The committed CA bundle is trimmed to a single region to keep the Lambda
+ * bundle small. See certs/README.md for what it is and how to regenerate it.
+ */
+export const RDS_CA_REGION = "us-west-2";
+
+/**
  * Bundlers flatten the output directory, so the packaged Lambda sets
  * DB_CA_BUNDLE_PATH explicitly. The relative path is the local default.
  */
@@ -21,7 +27,7 @@ const CA_BUNDLE_PATH =
     dirname(fileURLToPath(import.meta.url)),
     "..",
     "certs",
-    "rds-global-bundle.pem",
+    `rds-${RDS_CA_REGION}-bundle.pem`,
   );
 
 let cachedCa: string | undefined;
@@ -36,11 +42,21 @@ function buildPoolConfig(config: DbConfig): pg.PoolConfig {
     return { connectionString: config.connectionString };
   }
 
+  // The bundle only contains roots for one region, so connecting elsewhere
+  // would fail with an opaque TLS handshake error. Say why instead.
+  if (config.region !== RDS_CA_REGION) {
+    throw new Error(
+      `Database region "${config.region}" does not match the committed CA bundle ` +
+        `region "${RDS_CA_REGION}". Regenerate it with ` +
+        `"pnpm --filter @inept/db ca:fetch ${config.region}" and update RDS_CA_REGION.`,
+    );
+  }
+
   const signer = new Signer({
     hostname: config.host!,
     port: config.port!,
     username: config.user!,
-    region: config.region!,
+    region: config.region,
   });
 
   return {
