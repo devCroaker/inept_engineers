@@ -1,0 +1,23 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: inept-postgres
+    restart: unless-stopped
+    environment:
+      # Local development only. Deployed environments authenticate to RDS with
+      # IAM tokens, so no database password exists in AWS at all.
+      POSTGRES_USER: inept
+      POSTGRES_PASSWORD: localdev
+      POSTGRES_DB: inept
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U inept -d inept"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres_data:

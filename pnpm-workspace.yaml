@@ -1,0 +1,9 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+  - "infra"
+
+# esbuild ships prebuilt platform binaries via a postinstall script.
+# Required by drizzle-kit, vite, and CDK Lambda bundling.
+allowBuilds:
+  esbuild: true
