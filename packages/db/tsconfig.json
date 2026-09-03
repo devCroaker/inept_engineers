@@ -1,0 +1,13 @@
+{
+  "extends": "@inept/config/tsconfig.node.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "noEmit": true
+  },
+  "include": [
+    "src/**/*.ts",
+    "drizzle.config.ts",
+    "vitest.config.ts",
+    "auth-schema.config.ts"
+  ]
+}
