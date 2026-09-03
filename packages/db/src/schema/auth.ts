@@ -88,6 +88,15 @@ export const sessions = pgTable(
   ],
 );
 
+/**
+ * One row per sign-in method. A single person may hold several: a credential
+ * row for email and password, plus a Google row and a Discord row, all
+ * pointing at the same user. That is what lets someone sign in whichever way
+ * is convenient and land in the same account.
+ *
+ * The unique index on (issuer, account_id) prevents the reverse problem: one
+ * external account cannot be attached to two different users.
+ */
 export const accounts = pgTable(
   "account",
   {
@@ -108,7 +117,11 @@ export const accounts = pgTable(
       withTimezone: true,
     }),
     scope: text("scope"),
-    /** Unused: email and password sign-in is disabled in favour of Google and Discord. */
+    /**
+     * Set only on credential accounts, where it holds the hashed password.
+     * Null for Google and Discord rows, which authenticate against the
+     * provider instead.
+     */
     password: text("password"),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()

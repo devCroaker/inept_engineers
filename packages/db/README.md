@@ -23,6 +23,23 @@ Adding a role means a migration widening the `user_roles_role_valid` check, plus
 to `ROLES`. That is intentional: role names are compared in access-control code, so keeping them a
 TypeScript union means a typo fails the build instead of silently denying access.
 
+## Sign-in methods
+
+Three ways in, all landing in the same account: email and password, Google, and Discord. The
+`account` table holds one row per method, so a person may hold all three at once. The unique index
+on `(issuer, account_id)` stops one external account being attached to two different users.
+
+Linking policy, chosen because this database holds medical data:
+
+- **Google links automatically** when the email matches, because Google reliably reports whether an
+  email is verified.
+- **Discord and password must be linked explicitly** from account settings while already signed in.
+  Better Auth will otherwise link any provider whose email matches an existing user, which would let
+  someone who created a Discord account with your email address reach your medical row.
+
+Sign-up is open. New accounts arrive as `foe` with no roles, which under the access rules above
+means they can see very little until an officer promotes them.
+
 ## Member data is split by audience
 
 Personal data is separated by **who may read it**, not by topic. Each table has exactly one
