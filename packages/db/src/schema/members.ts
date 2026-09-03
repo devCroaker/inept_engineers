@@ -1,26 +1,25 @@
 import { relations } from "drizzle-orm";
-import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { index, integer, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 
 import { users } from "./auth.js";
 
 /**
- * Member data is deliberately split across two tables by sensitivity.
+ * Member data is split across tables by WHO IS ALLOWED TO READ IT, not by
+ * topic. Each table below has exactly one audience, which means access can be
+ * enforced structurally: code physically cannot leak a field it did not join.
+ * That is a much stronger guarantee than remembering to omit columns.
  *
- * `profiles` is the public face of a member: the SCA name and pronouns other
- * members see on an attendee list.
+ * The authoritative policy lives in ../access.ts. It is exported so the API
+ * layer and its tests share one definition rather than restating the rules.
  *
- * `memberPrivate` holds information that must never appear in a public API
- * response: legal name, contact details, emergency contacts, and
- * health-adjacent data such as allergies and dietary restrictions. It lives in
- * its own table so that exposing it requires an explicit join, rather than
- * being one forgotten `omit` away from leaking out of a profile endpoint.
- *
- * Access rule enforced in the API layer: a member may read and write their own
- * private row; organizers and admins may read all of them, because whoever is
- * cooking needs the allergy list. Nothing else may read them, and these fields
- * are excluded from logs.
+ *   profiles           every signed-in member
+ *   memberContact      the member, plus sister or officer
+ *   emergencyContacts  the member, plus sister or officer
+ *   memberDietary      the member, plus medical or kitchen
+ *   memberMedical      the member, plus medical
  */
 
+/** Visible to any signed-in member. Nothing here is sensitive. */
 export const profiles = pgTable("profiles", {
   userId: text("user_id")
     .primaryKey()
@@ -28,8 +27,9 @@ export const profiles = pgTable("profiles", {
   /** Society name, which is often not the member's legal name. */
   scaName: text("sca_name"),
   pronouns: text("pronouns"),
-  /** Home barony, shire, or canton. Free text, since members travel. */
-  homeBranch: text("home_branch"),
+  /** Rough location only, for carpooling and travel planning. No street address. */
+  city: text("city"),
+  state: text("state"),
   bio: text("bio"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
@@ -39,18 +39,14 @@ export const profiles = pgTable("profiles", {
     .defaultNow(),
 });
 
-export const memberPrivate = pgTable("member_private", {
+/** Administrative contact details. Readable by the member, sisters, and officers. */
+export const memberContact = pgTable("member_contact", {
   userId: text("user_id")
     .primaryKey()
     .references(() => users.id, { onDelete: "cascade" }),
   legalName: text("legal_name"),
   phone: text("phone"),
-  emergencyContactName: text("emergency_contact_name"),
-  emergencyContactPhone: text("emergency_contact_phone"),
-  /** Health-adjacent. Needed by whoever plans and cooks the feast. */
-  dietaryRestrictions: text("dietary_restrictions"),
-  allergies: text("allergies"),
-  /** Anything the member wants organizers to know, such as mobility needs. */
+  /** Mobility or accommodation needs relevant to planning a camp. */
   accessibilityNotes: text("accessibility_notes"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
@@ -60,37 +56,104 @@ export const memberPrivate = pgTable("member_private", {
     .defaultNow(),
 });
 
-export const usersRelations = relations(users, ({ one }) => ({
-  profile: one(profiles, { fields: [users.id], references: [profiles.userId] }),
-  private: one(memberPrivate, {
-    fields: [users.id],
-    references: [memberPrivate.userId],
-  }),
-}));
+/**
+ * Next of kin. Multiple rows per member, ordered by `priority` so whoever is
+ * calling knows who to try first. Same audience as memberContact.
+ */
+export const emergencyContacts = pgTable(
+  "emergency_contacts",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    phone: text("phone").notNull(),
+    /** Free text, for example "spouse" or "mother". */
+    relationship: text("relationship"),
+    /** Lower is contacted first. */
+    priority: integer("priority").notNull().default(0),
+    notes: text("notes"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("emergency_contacts_user_id_idx").on(table.userId, table.priority),
+  ],
+);
+
+/**
+ * Food-related health information. Readable by the member, medical, and
+ * kitchen, because those are the people planning and cooking the meals.
+ */
+export const memberDietary = pgTable("member_dietary", {
+  userId: text("user_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  allergies: text("allergies"),
+  dietaryRestrictions: text("dietary_restrictions"),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+/**
+ * The most restricted data in the system. Readable by the member and by
+ * medical only. Deliberately its own table so that no query written for the
+ * kitchen or for officers can reach it by accident.
+ */
+export const memberMedical = pgTable("member_medical", {
+  userId: text("user_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  medications: text("medications"),
+  /** Conditions responders should know about, such as diabetes or epilepsy. */
+  conditions: text("conditions"),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
 
 export const profilesRelations = relations(profiles, ({ one }) => ({
   user: one(users, { fields: [profiles.userId], references: [users.id] }),
 }));
 
-export const memberPrivateRelations = relations(memberPrivate, ({ one }) => ({
-  user: one(users, { fields: [memberPrivate.userId], references: [users.id] }),
+export const memberContactRelations = relations(memberContact, ({ one }) => ({
+  user: one(users, { fields: [memberContact.userId], references: [users.id] }),
+}));
+
+export const emergencyContactsRelations = relations(
+  emergencyContacts,
+  ({ one }) => ({
+    user: one(users, {
+      fields: [emergencyContacts.userId],
+      references: [users.id],
+    }),
+  }),
+);
+
+export const memberDietaryRelations = relations(memberDietary, ({ one }) => ({
+  user: one(users, { fields: [memberDietary.userId], references: [users.id] }),
+}));
+
+export const memberMedicalRelations = relations(memberMedical, ({ one }) => ({
+  user: one(users, { fields: [memberMedical.userId], references: [users.id] }),
 }));
 
 export type Profile = typeof profiles.$inferSelect;
 export type NewProfile = typeof profiles.$inferInsert;
-export type MemberPrivate = typeof memberPrivate.$inferSelect;
-export type NewMemberPrivate = typeof memberPrivate.$inferInsert;
-
-/**
- * Column names in `member_private`. Used by the API layer and by tests that
- * assert none of these ever appear in a public response body.
- */
-export const MEMBER_PRIVATE_FIELDS = [
-  "legalName",
-  "phone",
-  "emergencyContactName",
-  "emergencyContactPhone",
-  "dietaryRestrictions",
-  "allergies",
-  "accessibilityNotes",
-] as const;
+export type MemberContact = typeof memberContact.$inferSelect;
+export type EmergencyContact = typeof emergencyContacts.$inferSelect;
+export type NewEmergencyContact = typeof emergencyContacts.$inferInsert;
+export type MemberDietary = typeof memberDietary.$inferSelect;
+export type MemberMedical = typeof memberMedical.$inferSelect;

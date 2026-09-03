@@ -15,15 +15,21 @@ import {
  * The shapes here mirror exactly what `getAuthTables()` reports for the
  * installed version of better-auth, including the compound unique index on
  * (issuer, account_id). Do not change these by hand to suit application needs;
- * add application data to the tables in members.ts instead.
+ * application data belongs in members.ts and roles.ts instead.
  *
  * Better Auth generates its own string identifiers, so `id` is text rather
  * than a database-generated uuid.
  */
 
-/** Roles are ordered from least to most privileged. */
-export const MEMBER_ROLES = ["member", "organizer", "admin"] as const;
-export type MemberRole = (typeof MEMBER_ROLES)[number];
+/**
+ * Membership level, which is a progression rather than a set. Everyone starts
+ * as a Friend of Engineers and advances to member through the sponsorship
+ * process. Leadership standing (sister, officer) and jobs (kitchen, medical,
+ * and so on) are separate and live in user_roles, because a person can hold
+ * several of those at once.
+ */
+export const MEMBERSHIP_LEVELS = ["foe", "member"] as const;
+export type MembershipLevel = (typeof MEMBERSHIP_LEVELS)[number];
 
 export const users = pgTable(
   "user",
@@ -34,11 +40,14 @@ export const users = pgTable(
     emailVerified: boolean("email_verified").notNull().default(false),
     image: text("image"),
     /**
-     * Declared to Better Auth via `user.additionalFields`. Kept as text with a
-     * check constraint rather than a Postgres enum, so the auth adapter never
-     * has to know about a custom type.
+     * Declared to Better Auth via `user.additionalFields` so every account gets
+     * the default at sign-up. Text with a check constraint rather than a
+     * Postgres enum, so the auth adapter never has to know about a custom type.
      */
-    role: text("role").$type<MemberRole>().notNull().default("member"),
+    membershipLevel: text("membership_level")
+      .$type<MembershipLevel>()
+      .notNull()
+      .default("foe"),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -49,8 +58,8 @@ export const users = pgTable(
   (table) => [
     uniqueIndex("user_email_idx").on(table.email),
     check(
-      "user_role_valid",
-      sql`${table.role} in ('member', 'organizer', 'admin')`,
+      "user_membership_level_valid",
+      sql`${table.membershipLevel} in ('foe', 'member')`,
     ),
   ],
 );
