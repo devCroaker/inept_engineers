@@ -11,3 +11,4 @@ allowBuilds:
 minimumReleaseAgeExclude:
   - '@aws-sdk/credential-providers@3.1125.0'
   - '@aws-sdk/rds-signer@3.1125.0'
+  - '@aws-sdk/client-sesv2@3.1125.0'
