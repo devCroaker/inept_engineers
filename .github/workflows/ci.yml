@@ -41,6 +41,15 @@ jobs:
 
     env:
       DATABASE_URL: postgresql://inept:localdev@localhost:5433/inept
+      # Throwaway values so the auth suite can build its instance. They are not
+      # credentials: no real provider is contacted, only authorize URLs are
+      # constructed and inspected.
+      BETTER_AUTH_SECRET: ci-test-secret-not-used-anywhere-real
+      BETTER_AUTH_URL: http://localhost:3000
+      GOOGLE_CLIENT_ID: ci-google-id
+      GOOGLE_CLIENT_SECRET: ci-google-secret
+      DISCORD_CLIENT_ID: ci-discord-id
+      DISCORD_CLIENT_SECRET: ci-discord-secret
 
     steps:
       - uses: actions/checkout@v5
@@ -54,6 +63,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Apply database migrations
+        run: pnpm --filter @inept/db exec tsx src/migrate.ts
 
       - name: Lint
         run: pnpm lint
