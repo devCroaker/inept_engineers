@@ -75,6 +75,6 @@ Verification and password reset need to send mail. With no `EMAIL_FROM` set, the
 prints messages to the terminal, so both flows can be exercised locally with no mail provider. Set
 `EMAIL_FROM` to a verified SES identity and the SES sender is used instead.
 
-SES is already set up: the domain is verified with DKIM and a custom MAIL FROM, and production
-access has been requested. See [docs/email.md](../../docs/email.md) for the current state and what
-sandbox mode still restricts.
+SES is set up and out of sandbox: the domain is verified with DKIM and a custom MAIL FROM, and
+production access has been granted, so mail can go to any recipient. See
+[docs/email.md](../../docs/email.md).

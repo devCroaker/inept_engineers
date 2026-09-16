@@ -5,27 +5,32 @@ as the API.
 
 ## Current state
 
-| Item              | Value                                                        |
-| ----------------- | ------------------------------------------------------------ |
-| Domain identity   | `ineptengineers.com`, verified                               |
-| DKIM              | Easy DKIM, RSA 2048-bit, verified                            |
-| Custom MAIL FROM  | `mail.ineptengineers.com`, verified                          |
-| Production access | **Requested, pending AWS review**                            |
-| Sandbox limits    | 200 messages per day, 1 per second, verified recipients only |
+| Item                    | Value                                                   |
+| ----------------------- | ------------------------------------------------------- |
+| Domain identity         | `ineptengineers.com`, verified                          |
+| DKIM                    | Easy DKIM, RSA 2048-bit, verified                       |
+| Custom MAIL FROM        | `mail.ineptengineers.com`, verified                     |
+| Production access       | **Granted** (case 178959804600011)                      |
+| Sending limits          | 50,000 messages per day, 14 per second, any recipient   |
+| `dev.croaker@gmail.com` | Verified; no longer required now that sandbox is lifted |
 
-## What "sandbox" means
+## Sending limits
 
-Until AWS approves production access, SES will only deliver to addresses that have been verified
-individually. `dev.croaker@gmail.com` has been added as a verified identity for that reason, so the
-real email flow can be exercised before launch.
+Production access was granted, so SES delivers to any recipient. The account allows 50,000 messages
+per day at 14 per second, which is far beyond what a group of this size will use.
 
-**Members cannot receive verification emails until production access is granted.** AWS usually
-responds within a day. Check with:
+Individual recipient verification is no longer needed. `dev.croaker@gmail.com` remains verified from
+the sandbox period and can be left alone.
+
+Check the account state at any time with:
 
 ```bash
 aws sesv2 get-account --region us-west-2 \
   --query '{ProductionAccess:ProductionAccessEnabled,Review:Details.ReviewDetails.Status}'
 ```
+
+Sending can still be paused account-wide by AWS if bounce or complaint rates climb, so those are
+worth watching once real mail starts flowing.
 
 ## DNS records
 
