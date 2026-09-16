@@ -8,6 +8,7 @@ import {
   memberMedical,
   profiles,
 } from "./members.js";
+import { rsvps } from "./events.js";
 import { userRoles } from "./roles.js";
 
 /**
@@ -31,4 +32,5 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   }),
   emergencyContacts: many(emergencyContacts),
   roles: many(userRoles),
+  rsvps: many(rsvps),
 }));
