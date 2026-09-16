@@ -60,6 +60,41 @@ read none of it, profiles included: this is a private household roster, not a pu
 answers the question. The API layer consults it rather than restating the rules, and the tests
 assert against the same table, so the policy and its expectations cannot drift.
 
+## Events and RSVPs
+
+`events` covers everything the household puts on: `camping`, `party`, `day_event`, `practice`,
+`meeting`, `other`. Status is `draft`, `published`, or `cancelled`, and events start as drafts so
+nothing appears to members until an organizer publishes it.
+
+Official SCA registration is not handled here. Events that charge fees carry an
+`externalRegistrationUrl` pointing at the kingdom's own system. This site coordinates attendance and
+the camp food buy-in; it never takes event fees.
+
+### Why attendance is a date range, not a row per day
+
+`rsvps` records `arrivalDate` and `departureDate` rather than one row per day of a multi-day event.
+
+Per-night headcounts, which is what site fees and meal planning actually need, are derivable from
+the range, and a range is how people describe it: "Friday night through Sunday". A per-day table
+would only earn its complexity for genuinely non-contiguous attendance, which is rare. If that
+turns out to matter, it is an additive migration.
+
+One RSVP exists per member per event, enforced by a unique index, so changing your mind updates the
+row rather than adding another. `guestCount` covers non-member companions.
+
+Database-level constraints, all covered by tests that bypass the TypeScript types:
+
+| Constraint                                  | Rejects                            |
+| ------------------------------------------- | ---------------------------------- |
+| `events_ends_after_starts`                  | an event ending before it starts   |
+| `events_kind_valid` / `events_status_valid` | unknown kinds or statuses          |
+| `rsvps_event_user_idx`                      | a second RSVP from the same member |
+| `rsvps_departure_after_arrival`             | leaving before arriving            |
+| `rsvps_guest_count_non_negative`            | negative guest counts              |
+
+Deleting an event removes its RSVPs. Deleting a member removes their RSVPs but **keeps events they
+created**, with `createdBy` set to null: the event outlives whoever organised it.
+
 ## Local development
 
 ```bash
