@@ -7,6 +7,9 @@ packages:
 # Required by drizzle-kit, vite, and CDK Lambda bundling.
 allowBuilds:
   esbuild: true
+  # Rust-based module resolver used by eslint-config-next. Ships prebuilt
+  # platform binaries via a postinstall script.
+  unrs-resolver: true
 
 minimumReleaseAgeExclude:
   - '@aws-sdk/credential-providers@3.1125.0'
