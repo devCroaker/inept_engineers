@@ -7,7 +7,9 @@ import { requestId } from "hono/request-id";
 import { ApiError, errorBody } from "./lib/errors.js";
 import { type AppEnv, getAuth, withViewer } from "./lib/session.js";
 import { healthRouter } from "./routes/health.js";
+import { eventsRouter } from "./routes/events.js";
 import { meRouter } from "./routes/me.js";
+import { rsvpsRouter } from "./routes/rsvps.js";
 
 export const OPENAPI_INFO = {
   openapi: "3.1.0",
@@ -60,6 +62,8 @@ export function createApp() {
 
   app.route("/", healthRouter);
   app.route("/", meRouter);
+  app.route("/", eventsRouter);
+  app.route("/", rsvpsRouter);
 
   app.openAPIRegistry.registerComponent("securitySchemes", "sessionCookie", {
     type: "apiKey",
