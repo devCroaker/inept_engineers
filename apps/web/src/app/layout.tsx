@@ -2,11 +2,15 @@ import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 
 import { Providers } from "@/components/Providers";
+import { SiteHeader } from "@/components/SiteHeader";
 
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Inept Engineers",
+  title: {
+    default: "Inept Engineers",
+    template: "%s | Inept Engineers",
+  },
   description:
     "Events, attendance, and camp coordination for the Inept Engineers.",
 };
@@ -22,7 +26,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body>
-        <Providers>{children}</Providers>
+        <Providers>
+          <SiteHeader />
+          {children}
+        </Providers>
       </body>
     </html>
   );

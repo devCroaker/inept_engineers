@@ -13,16 +13,17 @@ Tracked here rather than in a chat history so it survives and can be reordered.
 | #6  | Next.js app with MUI and Tailwind                    |
 | #7  | Events and RSVP schema                               |
 | #8  | SES setup documented, production access granted      |
+| #9  | Events and RSVP API                                  |
 
 ## In progress
 
-**Events API.** List, read, create, and update events; RSVP to them; see who is coming.
+**Events UI.** Being built in three parts so each is reviewable on its own.
+
+1. Browsing: app shell, shared viewer state, event list, and event detail. (This PR.)
+2. Replying: the RSVP control, and the attendance roster for organisers.
+3. Organising: the form for creating and editing an event.
 
 ## Next
-
-**Events UI.** Event list, event detail with an RSVP control, and an organizer view for creating
-events and reading the attendance roster. This is the point at which the site is usable at a real
-event.
 
 **Infrastructure (CDK).** Certificate, VPC with no NAT Gateway, RDS, API Gateway and Lambda, and
 CloudFront serving the web app with `/api/*` routed to the API. Roughly 18 USD per month.

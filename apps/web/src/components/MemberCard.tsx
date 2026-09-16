@@ -10,60 +10,23 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import { createApiClient } from "@inept/api-client";
-import { useEffect, useState } from "react";
+import Link from "next/link";
 
-import { signOut } from "@/lib/auth-client";
-
-const client = createApiClient();
-
-interface MeState {
-  loading: boolean;
-  viewer?: {
-    name: string;
-    email: string;
-    membershipLevel: string;
-    roles: string[];
-    profile: {
-      scaName: string | null;
-      city: string | null;
-      state: string | null;
-    } | null;
-  };
-  signedOut?: boolean;
-}
+import { useViewer } from "@/lib/viewer";
 
 export function MemberCard() {
-  const [state, setState] = useState<MeState>({ loading: true });
+  const state = useViewer();
 
-  useEffect(() => {
-    let cancelled = false;
-
-    void (async () => {
-      const { data, error } = await client.GET("/api/me");
-      if (cancelled) return;
-      if (error || !data) {
-        setState({ loading: false, signedOut: true });
-        return;
-      }
-      setState({ loading: false, viewer: data });
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  if (state.loading) {
+  if (state.status === "loading") {
     return <Skeleton variant="rounded" height={180} />;
   }
 
-  if (state.signedOut || !state.viewer) {
+  if (state.status === "signedOut") {
     return (
       <Alert
         severity="info"
         action={
-          <Button href="/sign-in" size="small">
+          <Button component={Link} href="/sign-in" size="small">
             Sign in
           </Button>
         }
@@ -115,12 +78,8 @@ export function MemberCard() {
         ) : null}
 
         <Box>
-          <Button
-            variant="outlined"
-            size="small"
-            onClick={() => void signOut()}
-          >
-            Sign out
+          <Button component={Link} href="/events" variant="contained">
+            See what is coming up
           </Button>
         </Box>
       </Stack>

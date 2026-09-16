@@ -453,6 +453,7 @@ export interface components {
             membershipLevel: components["schemas"]["MembershipLevel"];
             roles: components["schemas"]["Role"][];
             profile: components["schemas"]["Profile"];
+            can: components["schemas"]["ViewerCapabilities"];
         };
         /** @enum {string} */
         MembershipLevel: "foe" | "member";
@@ -466,6 +467,10 @@ export interface components {
             state: string | null;
             bio: string | null;
         } | null;
+        ViewerCapabilities: {
+            manageEvents: boolean;
+            rsvp: boolean;
+        };
         Error: {
             error: {
                 /** @example unauthorized */

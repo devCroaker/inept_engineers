@@ -16,6 +16,7 @@
     "format": "prettier --write \"**/*.{ts,tsx,js,mjs,json,md,yaml,yml,css}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,mjs,json,md,yaml,yml,css}\"",
     "db:up": "docker compose up -d",
+    "db:migrate": "pnpm --filter @inept/db run db:migrate",
     "db:down": "docker compose down",
     "db:reset": "docker compose down -v && docker compose up -d",
     "prepare": "husky"

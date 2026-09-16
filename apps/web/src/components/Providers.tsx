@@ -5,6 +5,7 @@ import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter";
 import { Provider as JotaiProvider } from "jotai";
 import type { ReactNode } from "react";
 
+import { ViewerLoader } from "@/components/ViewerLoader";
 import { theme } from "@/theme";
 
 /**
@@ -18,7 +19,11 @@ export function Providers({ children }: { children: ReactNode }) {
     <AppRouterCacheProvider options={{ enableCssLayer: true }}>
       <ThemeProvider theme={theme} defaultMode="system">
         <CssBaseline />
-        <JotaiProvider>{children}</JotaiProvider>
+        <JotaiProvider>
+          {/* Resolves the session once, inside the provider, before anything reads it. */}
+          <ViewerLoader />
+          {children}
+        </JotaiProvider>
       </ThemeProvider>
     </AppRouterCacheProvider>
   );

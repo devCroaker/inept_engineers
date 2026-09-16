@@ -1,6 +1,6 @@
 import { ErrorSchema, ViewerSchema } from "@inept/api-contract";
 import { OpenAPIHono, createRoute } from "@hono/zod-openapi";
-import { getDb, profiles } from "@inept/db";
+import { canManageEvents, canRsvp, getDb, profiles } from "@inept/db";
 import { eq } from "drizzle-orm";
 
 import { type AppEnv, requireViewer, viewerOf } from "../lib/session.js";
@@ -35,6 +35,8 @@ export const meRouter = new OpenAPIHono<AppEnv>().openapi(getMe, async (c) => {
     where: eq(profiles.userId, viewer.id),
   });
 
+  const access = { viewerId: viewer.id, viewerRoles: viewer.roles };
+
   return c.json(
     {
       id: viewer.id,
@@ -53,6 +55,10 @@ export const meRouter = new OpenAPIHono<AppEnv>().openapi(getMe, async (c) => {
             bio: profile.bio,
           }
         : null,
+      can: {
+        manageEvents: canManageEvents(access),
+        rsvp: canRsvp(access),
+      },
     },
     200,
   );
