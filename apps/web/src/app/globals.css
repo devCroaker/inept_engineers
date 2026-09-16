@@ -1,0 +1,29 @@
+/*
+ * Cascade layer order is what makes MUI and Tailwind coexist.
+ *
+ * MUI emits all of its styles into the `mui` layer, enabled by passing
+ * enableCssLayer to AppRouterCacheProvider in layout.tsx. Because `mui` is
+ * declared before `utilities`, a Tailwind utility always wins over a MUI style
+ * without needing !important, which is what older setups required.
+ *
+ * This declaration must come before the Tailwind import so the order is
+ * established first.
+ */
+@layer theme, base, mui, components, utilities;
+
+@import "tailwindcss";
+
+@theme {
+  --color-brand: #003db2;
+  --color-brand-contrast: #ffffff;
+}
+
+:root {
+  color-scheme: light dark;
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+}
