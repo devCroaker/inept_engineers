@@ -10,6 +10,9 @@ packages/db/migrations/
 # Code generation output.
 **/*.gen.ts
 
+# Emitted from the Zod schemas on every build.
+apps/api/openapi.json
+
 # Build output.
 dist/
 build/

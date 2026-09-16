@@ -1,0 +1,5 @@
+{
+  "extends": "@inept/config/tsconfig.node.json",
+  "compilerOptions": { "rootDir": ".", "noEmit": true },
+  "include": ["src/**/*.ts"]
+}

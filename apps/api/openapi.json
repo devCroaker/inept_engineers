@@ -1,0 +1,244 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Inept Engineers API",
+    "version": "0.1.0",
+    "description": "Backs ineptengineers.com. The OpenAPI document is generated from the same Zod schemas used for runtime validation, so the two cannot drift apart."
+  },
+  "components": {
+    "securitySchemes": {
+      "sessionCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "better-auth.session_token",
+        "description": "Session cookie issued by Better Auth after sign-in."
+      }
+    },
+    "schemas": {
+      "Health": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "degraded"
+            ]
+          },
+          "database": {
+            "type": "string",
+            "enum": [
+              "up",
+              "down"
+            ]
+          },
+          "uptimeSeconds": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "status",
+          "database",
+          "uptimeSeconds"
+        ]
+      },
+      "Viewer": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "image": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uri"
+          },
+          "membershipLevel": {
+            "$ref": "#/components/schemas/MembershipLevel"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Role"
+            }
+          },
+          "profile": {
+            "$ref": "#/components/schemas/Profile"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "email",
+          "image",
+          "membershipLevel",
+          "roles",
+          "profile"
+        ]
+      },
+      "MembershipLevel": {
+        "type": "string",
+        "enum": [
+          "foe",
+          "member"
+        ]
+      },
+      "Role": {
+        "type": "string",
+        "enum": [
+          "sister",
+          "officer",
+          "captain",
+          "triad",
+          "medical",
+          "money",
+          "web",
+          "kitchen"
+        ]
+      },
+      "Profile": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "scaName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "pronouns": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "city": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "state": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "bio": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "userId",
+          "scaName",
+          "pronouns",
+          "city",
+          "state",
+          "bio"
+        ]
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "example": "unauthorized"
+              },
+              "message": {
+                "type": "string",
+                "example": "Sign in to continue."
+              }
+            },
+            "required": [
+              "code",
+              "message"
+            ]
+          }
+        },
+        "required": [
+          "error"
+        ]
+      }
+    },
+    "parameters": {}
+  },
+  "paths": {
+    "/api/health": {
+      "get": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Liveness and database connectivity check",
+        "responses": {
+          "200": {
+            "description": "Service is reachable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/me": {
+      "get": {
+        "tags": [
+          "Members"
+        ],
+        "summary": "The signed-in member",
+        "description": "Returns identity, membership level, roles, and public profile. Sensitive stores (contact details, emergency contacts, dietary, medical) are deliberately not included here; each is served by its own endpoint so their narrower audiences stay enforced.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The signed-in member.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Viewer"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not signed in.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "webhooks": {}
+}
