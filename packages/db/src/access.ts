@@ -89,3 +89,54 @@ export function canReadMemberData(
 
   return policy.roles.some((role) => viewerRoles.includes(role));
 }
+
+/**
+ * Roles allowed to create and edit events, and to see drafts.
+ *
+ * Leadership rather than the functional offices: running an event is a
+ * leadership job, whereas medical, money, web, and kitchen are specific duties
+ * that do not imply authority over the calendar. Adjust this list if that does
+ * not match how the household actually works; it is the single place the rule
+ * is expressed.
+ */
+export const EVENT_MANAGER_ROLES = [
+  "captain",
+  "triad",
+  "officer",
+  "sister",
+] as const;
+
+export type EventManagerRole = (typeof EVENT_MANAGER_ROLES)[number];
+
+function holdsAny(context: AccessContext, roles: readonly Role[]): boolean {
+  const held = context.viewerRoles ?? [];
+  return roles.some((role) => held.includes(role));
+}
+
+/** Whether the viewer may create events, edit them, or change their status. */
+export function canManageEvents(context: AccessContext): boolean {
+  if (!context.viewerId) {
+    return false;
+  }
+  return holdsAny(context, EVENT_MANAGER_ROLES);
+}
+
+/**
+ * Whether the viewer may see events that are not published.
+ *
+ * Deliberately the same set as canManageEvents: a draft is unfinished work, and
+ * showing it to the whole membership would announce events before they are
+ * real.
+ */
+export function canViewUnpublishedEvents(context: AccessContext): boolean {
+  return canManageEvents(context);
+}
+
+/**
+ * Whether the viewer may RSVP. Any signed-in member can, including a foe:
+ * turning up to an event is how someone becomes known well enough to be
+ * sponsored, so gating attendance behind membership would be backwards.
+ */
+export function canRsvp(context: AccessContext): boolean {
+  return Boolean(context.viewerId);
+}

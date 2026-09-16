@@ -88,6 +88,350 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List events
+         * @description Upcoming published events by default. Drafts and cancelled events are only visible to members who can manage events.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    limit?: number;
+                    offset?: number | null;
+                    status?: components["schemas"]["EventStatus"];
+                    when?: "upcoming" | "past" | "all";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description A page of events. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["EventList"];
+                    };
+                };
+                /** @description Not signed in. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create an event */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateEvent"];
+                };
+            };
+            responses: {
+                /** @description The created event. */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Event"];
+                    };
+                };
+                /** @description Not signed in. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description You do not hold a role that can manage events. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description An event already uses that slug. */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/events/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Fetch one event */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    slug: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The event. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Event"];
+                    };
+                };
+                /** @description Not signed in. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No such event, or it is not published and you cannot see drafts. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update an event */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    slug: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateEvent"];
+                };
+            };
+            responses: {
+                /** @description The updated event. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Event"];
+                    };
+                };
+                /** @description Not signed in. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description You do not hold a role that can manage events. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No such event. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/events/{slug}/rsvp": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Create or change your own RSVP
+         * @description Idempotent: one RSVP exists per member per event, so changing your mind updates it rather than adding another. Any signed-in member may RSVP, including a Friend of Engineers.
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    slug: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpsertRsvp"];
+                };
+            };
+            responses: {
+                /** @description The event, including your updated RSVP. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Event"];
+                    };
+                };
+                /** @description Not signed in. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No such event. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description The event is cancelled, or it has already finished. */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/events/{slug}/rsvps": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Who is coming
+         * @description Visible to any signed-in member, since knowing who is attending is the point. Contains no contact, dietary, or medical information; those have narrower audiences and their own endpoints.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    slug: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Everyone who has responded. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AttendeeList"];
+                    };
+                };
+                /** @description Not signed in. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No such event. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -129,6 +473,114 @@ export interface components {
                 /** @example Sign in to continue. */
                 message: string;
             };
+        };
+        EventList: {
+            items: components["schemas"]["Event"][];
+            total: number;
+            limit: number;
+            offset: number;
+        };
+        Event: {
+            id: string;
+            /** @example autumn-war */
+            slug: string;
+            /** @example Autumn War */
+            title: string;
+            description: string | null;
+            kind: components["schemas"]["EventKind"];
+            status: components["schemas"]["EventStatus"];
+            /** Format: date-time */
+            startsAt: string;
+            /** Format: date-time */
+            endsAt: string | null;
+            location: string | null;
+            address: string | null;
+            /** Format: uri */
+            externalRegistrationUrl: string | null;
+            capacity: number | null;
+            attendance: components["schemas"]["AttendanceSummary"];
+            viewerRsvp: {
+                status: components["schemas"]["RsvpStatus"];
+                /** Format: date */
+                arrivalDate: string | null;
+                /** Format: date */
+                departureDate: string | null;
+                guestCount: number;
+                notes: string | null;
+            } | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        /** @enum {string} */
+        EventKind: "camping" | "party" | "day_event" | "practice" | "meeting" | "other";
+        /** @enum {string} */
+        EventStatus: "draft" | "published" | "cancelled";
+        AttendanceSummary: {
+            yes: number;
+            maybe: number;
+            no: number;
+            expectedHeadcount: number;
+        };
+        /** @enum {string} */
+        RsvpStatus: "yes" | "no" | "maybe";
+        CreateEvent: {
+            slug: string;
+            title: string;
+            description?: string | null;
+            kind?: components["schemas"]["EventKind"];
+            status?: components["schemas"]["EventStatus"];
+            /** Format: date-time */
+            startsAt: string;
+            /** Format: date-time */
+            endsAt?: string | null;
+            location?: string | null;
+            address?: string | null;
+            /** Format: uri */
+            externalRegistrationUrl?: string | null;
+            capacity?: number | null;
+        };
+        UpdateEvent: {
+            title?: string;
+            description?: string | null;
+            kind?: components["schemas"]["EventKind"];
+            status?: components["schemas"]["EventStatus"];
+            /** Format: date-time */
+            startsAt?: string;
+            /** Format: date-time */
+            endsAt?: string | null;
+            location?: string | null;
+            address?: string | null;
+            /** Format: uri */
+            externalRegistrationUrl?: string | null;
+            capacity?: number | null;
+        };
+        UpsertRsvp: {
+            status: components["schemas"]["RsvpStatus"];
+            /** Format: date */
+            arrivalDate?: string | null;
+            /** Format: date */
+            departureDate?: string | null;
+            /** @default 0 */
+            guestCount: number;
+            notes?: string | null;
+        };
+        AttendeeList: {
+            items: components["schemas"]["Attendee"][];
+            total: number;
+        };
+        Attendee: {
+            userId: string;
+            name: string;
+            scaName: string | null;
+            status: components["schemas"]["RsvpStatus"];
+            /** Format: date */
+            arrivalDate: string | null;
+            /** Format: date */
+            departureDate: string | null;
+            guestCount: number;
+            notes: string | null;
         };
     };
     responses: never;
