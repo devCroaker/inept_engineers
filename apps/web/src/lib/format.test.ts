@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { formatEventDates, formatHeadcount, isMultiDay } from "./format";
+import {
+  formatEventDates,
+  formatHeadcount,
+  formatPlainDate,
+  isMultiDay,
+  toDateInput,
+} from "./format";
 
 // Pinned so the assertions do not depend on the machine running them.
 const TZ = "America/Los_Angeles";
@@ -80,5 +86,27 @@ describe("formatHeadcount", () => {
     expect(formatHeadcount({ yes: 0, maybe: 3, expectedHeadcount: 0 })).toBe(
       "0 going, 3 maybe",
     );
+  });
+});
+
+describe("formatPlainDate", () => {
+  it("prints the day it was given, west of UTC", () => {
+    // The bug this guards against: new Date("2026-10-02") is midnight UTC, so
+    // formatting it in a zone behind UTC prints Oct 1 and moves the day
+    // somebody said they were arriving.
+    expect(formatPlainDate("2026-10-02")).toBe("Fri, Oct 2");
+  });
+
+  it("returns anything unparseable unchanged rather than inventing a date", () => {
+    expect(formatPlainDate("")).toBe("");
+    expect(formatPlainDate("not-a-date")).toBe("not-a-date");
+  });
+});
+
+describe("toDateInput", () => {
+  it("gives the day in the viewer's zone, which is what a date input wants", () => {
+    // 11pm on Oct 2 in Los Angeles is already Oct 3 in UTC.
+    expect(toDateInput("2026-10-03T06:00:00.000Z", TZ)).toBe("2026-10-02");
+    expect(toDateInput("2026-10-03T06:00:00.000Z", "UTC")).toBe("2026-10-03");
   });
 });

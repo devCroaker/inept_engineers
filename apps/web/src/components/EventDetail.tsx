@@ -16,7 +16,10 @@ import {
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+import { AttendeeRoster } from "@/components/AttendeeRoster";
+import { RsvpControl } from "@/components/RsvpControl";
 import { api, request } from "@/lib/api";
+import { repliesOpen } from "@/lib/events";
 import {
   EVENT_KIND_LABELS,
   RSVP_LABELS,
@@ -33,6 +36,8 @@ type State =
 export function EventDetail({ slug }: { slug: string }) {
   const viewerState = useViewer();
   const [state, setState] = useState<State>({ status: "loading" });
+  // Bumped after a reply is saved, which remounts the roster so it reloads.
+  const [replyCount, setReplyCount] = useState(0);
 
   const signedIn = viewerState.status === "signedIn";
 
@@ -169,9 +174,7 @@ export function EventDetail({ slug }: { slug: string }) {
             </Detail>
           ) : null}
 
-          <Detail label="Who is coming">
-            {formatHeadcount(event.attendance)}
-          </Detail>
+          <Detail label="Expected">{formatHeadcount(event.attendance)}</Detail>
 
           {event.capacity !== null ? (
             <Detail label="Capacity">{`${String(event.capacity)} people`}</Detail>
@@ -195,6 +198,25 @@ export function EventDetail({ slug }: { slug: string }) {
           ) : null}
         </Stack>
       </Paper>
+
+      <RsvpControl
+        event={event}
+        onUpdated={(updated) => {
+          setState({ status: "ready", event: updated });
+          setReplyCount((count) => count + 1);
+        }}
+      />
+
+      <Box>
+        <Typography variant="h2" className="mb-3 text-xl">
+          Who is coming
+        </Typography>
+        <AttendeeRoster
+          key={replyCount}
+          slug={event.slug}
+          invite={repliesOpen(event)}
+        />
+      </Box>
 
       <Box>
         <Button component={Link} href="/events" size="small">
