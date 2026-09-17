@@ -73,6 +73,9 @@
           },
           "profile": {
             "$ref": "#/components/schemas/Profile"
+          },
+          "can": {
+            "$ref": "#/components/schemas/ViewerCapabilities"
           }
         },
         "required": [
@@ -82,7 +85,8 @@
           "image",
           "membershipLevel",
           "roles",
-          "profile"
+          "profile",
+          "can"
         ]
       },
       "MembershipLevel": {
@@ -152,6 +156,21 @@
           "city",
           "state",
           "bio"
+        ]
+      },
+      "ViewerCapabilities": {
+        "type": "object",
+        "properties": {
+          "manageEvents": {
+            "type": "boolean"
+          },
+          "rsvp": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "manageEvents",
+          "rsvp"
         ]
       },
       "Error": {

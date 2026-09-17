@@ -1,9 +1,23 @@
 import createOpenApiClient, { type Client } from "openapi-fetch";
 
-import type { paths } from "./schema.gen.js";
+import type { components, paths } from "./schema.gen.js";
 
 export type ApiPaths = paths;
 export type ApiClient = Client<paths>;
+
+/**
+ * Every named schema in the OpenAPI document, so consumers describe API data
+ * with the generated types rather than hand-written interfaces that drift.
+ */
+export type ApiSchemas = components["schemas"];
+
+export type Viewer = ApiSchemas["Viewer"];
+export type Role = ApiSchemas["Role"];
+export type ApiEvent = ApiSchemas["Event"];
+export type Attendee = ApiSchemas["Attendee"];
+export type RsvpStatus = ApiSchemas["RsvpStatus"];
+export type EventKind = ApiSchemas["EventKind"];
+export type EventStatus = ApiSchemas["EventStatus"];
 
 export interface CreateApiClientOptions {
   /**

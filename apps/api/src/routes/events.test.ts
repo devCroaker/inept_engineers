@@ -50,6 +50,25 @@ describe.runIf(hasDb)("events API", () => {
     }
   });
 
+  it("tells each viewer what they may do, so the UI need not guess", async () => {
+    const read = async (cookie: string) => {
+      const res = await app.request("/api/me", { headers: { cookie } });
+      return (await res.json()) as {
+        can: { manageEvents: boolean; rsvp: boolean };
+      };
+    };
+
+    expect((await read(captain.cookie)).can).toEqual({
+      manageEvents: true,
+      rsvp: true,
+    });
+    // A foe may still RSVP: turning up is how someone gets sponsored.
+    expect((await read(member.cookie)).can).toEqual({
+      manageEvents: false,
+      rsvp: true,
+    });
+  });
+
   it("lets a captain create an event", async () => {
     const res = await app.request("/api/events", {
       method: "POST",

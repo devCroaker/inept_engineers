@@ -12,7 +12,7 @@
   "scripts": {
     "ca:fetch": "node scripts/fetch-rds-ca.mjs",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "tsx src/migrate.ts",
+    "db:migrate": "tsx --env-file-if-exists=../../.env src/migrate.ts",
     "db:studio": "drizzle-kit studio",
     "lint": "eslint .",
     "test": "vitest run --passWithNoTests",

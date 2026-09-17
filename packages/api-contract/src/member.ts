@@ -21,6 +21,24 @@ export const ProfileSchema = z
   })
   .openapi("Profile");
 
+/**
+ * What the signed-in member is allowed to do.
+ *
+ * Sent by the server rather than worked out in the browser from `roles`. The
+ * rules live in one place, @inept/db's access policy, and the UI reads the
+ * answer instead of restating the question. A client that guessed would drift
+ * the moment a role's meaning changed, and would show buttons that then fail.
+ *
+ * This is for deciding what to render. It is not a security boundary: every
+ * endpoint checks the same policy again for itself.
+ */
+export const ViewerCapabilitiesSchema = z
+  .object({
+    manageEvents: z.boolean(),
+    rsvp: z.boolean(),
+  })
+  .openapi("ViewerCapabilities");
+
 /** The signed-in user's own view of themselves. */
 export const ViewerSchema = z
   .object({
@@ -31,6 +49,7 @@ export const ViewerSchema = z
     membershipLevel: MembershipLevelSchema,
     roles: z.array(RoleSchema),
     profile: ProfileSchema.nullable(),
+    can: ViewerCapabilitiesSchema,
   })
   .openapi("Viewer");
 
@@ -38,6 +57,7 @@ export const UpdateProfileSchema = ProfileSchema.omit({ userId: true })
   .partial()
   .openapi("UpdateProfile");
 
+export type ViewerCapabilities = z.infer<typeof ViewerCapabilitiesSchema>;
 export type Profile = z.infer<typeof ProfileSchema>;
 export type Viewer = z.infer<typeof ViewerSchema>;
 export type UpdateProfile = z.infer<typeof UpdateProfileSchema>;

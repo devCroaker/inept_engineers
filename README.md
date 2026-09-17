@@ -42,8 +42,15 @@ nvm use
 pnpm install
 cp .env.example .env
 pnpm db:up          # start local Postgres
+pnpm db:migrate     # create the tables
 pnpm dev            # web on :3000, api on :8787
 ```
+
+The API reads `.env` from the repository root, so the values above reach it
+without any per-package copies. The web app talks to the API through its own
+origin (`/api/*` is proxied in development and served by CloudFront in
+production), which is what keeps the session cookie and the OAuth redirect URIs
+pointing at one place.
 
 Useful scripts:
 
