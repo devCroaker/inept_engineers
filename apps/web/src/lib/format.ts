@@ -56,6 +56,29 @@ function dayKey(value: Date, timeZone?: string): string {
   }).format(value);
 }
 
+/**
+ * Formats a plain calendar date, the `YYYY-MM-DD` the API uses for arrival and
+ * departure.
+ *
+ * Parsed as UTC and formatted as UTC on purpose. `new Date("2026-10-02")` is
+ * midnight UTC, so formatting it in a zone behind UTC prints the first of
+ * October: the day someone said they were arriving would silently move.
+ */
+export function formatPlainDate(value: string): string {
+  const [year, month, day] = value.split("-").map(Number);
+  if (!year || !month || !day) return value;
+
+  return part(new Date(Date.UTC(year, month - 1, day)), DAY_FORMAT, "UTC");
+}
+
+/**
+ * The `YYYY-MM-DD` an instant falls on, which is the value a native date input
+ * wants. Used to bound arrival and departure to the days of the event.
+ */
+export function toDateInput(iso: string, timeZone?: string): string {
+  return dayKey(new Date(iso), timeZone);
+}
+
 export function isMultiDay(
   startsAt: string,
   endsAt: string | null,
