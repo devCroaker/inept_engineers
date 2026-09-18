@@ -15,7 +15,7 @@ import { useEffect, useState } from "react";
 
 import { EventCard } from "@/components/EventCard";
 import { api, request } from "@/lib/api";
-import { useViewer } from "@/lib/viewer";
+import { canManageEvents, useViewer } from "@/lib/viewer";
 
 type When = "upcoming" | "past";
 
@@ -84,16 +84,33 @@ export function EventList() {
 
   return (
     <Stack spacing={3}>
-      <Tabs
-        value={when}
-        onChange={(_, value: When) => {
-          setWhen(value);
-        }}
-        aria-label="Which events to show"
+      <Stack
+        direction="row"
+        spacing={2}
+        className="items-center justify-between"
       >
-        <Tab value="upcoming" label="Upcoming" />
-        <Tab value="past" label="Past" />
-      </Tabs>
+        <Tabs
+          value={when}
+          onChange={(_, value: When) => {
+            setWhen(value);
+          }}
+          aria-label="Which events to show"
+        >
+          <Tab value="upcoming" label="Upcoming" />
+          <Tab value="past" label="Past" />
+        </Tabs>
+
+        {canManageEvents(viewerState) ? (
+          <Button
+            component={Link}
+            href="/events/new"
+            variant="contained"
+            className="shrink-0"
+          >
+            New event
+          </Button>
+        ) : null}
+      </Stack>
 
       {state.status === "loading" ? (
         <Stack spacing={2}>

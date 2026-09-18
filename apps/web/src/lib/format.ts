@@ -79,6 +79,28 @@ export function toDateInput(iso: string, timeZone?: string): string {
   return dayKey(new Date(iso), timeZone);
 }
 
+/**
+ * An instant as a `datetime-local` input wants it: the wall clock the person
+ * sitting in front of the browser reads, with no zone on the end.
+ *
+ * Built from the local getters rather than from toISOString, which would hand
+ * back UTC and shift the time an organiser typed.
+ */
+export function toDateTimeInput(iso: string): string {
+  const value = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+
+  return (
+    `${String(value.getFullYear())}-${pad(value.getMonth() + 1)}-${pad(value.getDate())}` +
+    `T${pad(value.getHours())}:${pad(value.getMinutes())}`
+  );
+}
+
+/** The inverse: a wall clock reading back to an instant the API can store. */
+export function fromDateTimeInput(value: string): string {
+  return new Date(value).toISOString();
+}
+
 export function isMultiDay(
   startsAt: string,
   endsAt: string | null,

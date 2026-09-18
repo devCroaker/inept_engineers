@@ -26,7 +26,7 @@ import {
   formatEventDates,
   formatHeadcount,
 } from "@/lib/format";
-import { useViewer } from "@/lib/viewer";
+import { canManageEvents, useViewer } from "@/lib/viewer";
 
 type State =
   | { status: "loading" }
@@ -218,11 +218,21 @@ export function EventDetail({ slug }: { slug: string }) {
         />
       </Box>
 
-      <Box>
+      <Stack direction="row" spacing={2}>
         <Button component={Link} href="/events" size="small">
           Back to events
         </Button>
-      </Box>
+        {canManageEvents(viewerState) ? (
+          <Button
+            component={Link}
+            href={`/events/${event.slug}/edit`}
+            size="small"
+            variant="outlined"
+          >
+            Edit event
+          </Button>
+        ) : null}
+      </Stack>
     </Stack>
   );
 }
