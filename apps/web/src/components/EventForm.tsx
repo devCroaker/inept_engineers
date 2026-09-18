@@ -22,7 +22,6 @@ import {
   fromDateTimeInput,
   toDateTimeInput,
 } from "@/lib/format";
-import { slugProblem, slugify } from "@/lib/slug";
 
 const KINDS = Object.keys(EVENT_KIND_LABELS) as EventKind[];
 const STATUSES = Object.keys(EVENT_STATUS_LABELS) as EventStatus[];
@@ -35,7 +34,6 @@ const STATUS_HELP: Record<EventStatus, string> = {
 
 interface Fields {
   title: string;
-  slug: string;
   kind: EventKind;
   status: EventStatus;
   startsAt: string;
@@ -50,7 +48,6 @@ interface Fields {
 function initialFields(event?: ApiEvent): Fields {
   return {
     title: event?.title ?? "",
-    slug: event?.slug ?? "",
     kind: event?.kind ?? "other",
     status: event?.status ?? "draft",
     startsAt: event ? toDateTimeInput(event.startsAt) : "",
@@ -69,18 +66,11 @@ function orNull(value: string): string | null {
   return trimmed === "" ? null : trimmed;
 }
 
-function problems(
-  fields: Fields,
-  isNew: boolean,
-): Partial<Record<keyof Fields, string>> {
+function problems(fields: Fields): Partial<Record<keyof Fields, string>> {
   const found: Partial<Record<keyof Fields, string>> = {};
 
   if (fields.title.trim() === "") {
     found.title = "Needed.";
-  }
-
-  if (isNew) {
-    found.slug = slugProblem(fields.slug);
   }
 
   if (fields.startsAt === "") {
@@ -121,26 +111,15 @@ export function EventForm({ event }: { event?: ApiEvent }) {
   const router = useRouter();
 
   const [fields, setFields] = useState<Fields>(() => initialFields(event));
-  // While nobody has typed a slug, it follows the title. Once they have, it
-  // stops moving under them.
-  const [slugTouched, setSlugTouched] = useState(!isNew);
   const [showProblems, setShowProblems] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string>();
 
-  const found = problems(fields, isNew);
+  const found = problems(fields);
   const shown = showProblems ? found : {};
 
   function set<K extends keyof Fields>(key: K, value: Fields[K]) {
     setFields((current) => ({ ...current, [key]: value }));
-  }
-
-  function setTitle(title: string) {
-    setFields((current) => ({
-      ...current,
-      title,
-      slug: slugTouched ? current.slug : slugify(title),
-    }));
   }
 
   async function submit() {
@@ -170,11 +149,9 @@ export function EventForm({ event }: { event?: ApiEvent }) {
       controller.signal,
       () =>
         isNew
-          ? api.POST("/api/events", {
-              body: { ...body, slug: fields.slug },
-            })
-          : api.PATCH("/api/events/{slug}", {
-              params: { path: { slug: event.slug } },
+          ? api.POST("/api/events", { body })
+          : api.PATCH("/api/events/{id}", {
+              params: { path: { id: event.id } },
               body,
             }),
       isNew ? "Could not create the event." : "Could not save your changes.",
@@ -182,7 +159,7 @@ export function EventForm({ event }: { event?: ApiEvent }) {
 
     if (outcome.kind === "ok") {
       // Straight to the event itself, which is the thing the organiser wanted.
-      router.push(`/events/${outcome.data.slug}`);
+      router.push(`/events/${outcome.data.id}`);
       router.refresh();
       return;
     }
@@ -206,35 +183,9 @@ export function EventForm({ event }: { event?: ApiEvent }) {
             error={Boolean(shown.title)}
             helperText={shown.title}
             onChange={(e) => {
-              setTitle(e.target.value);
+              set("title", e.target.value);
             }}
           />
-
-          {isNew ? (
-            <TextField
-              label="Web address"
-              required
-              value={fields.slug}
-              error={Boolean(shown.slug)}
-              helperText={
-                shown.slug ?? `The event will live at /events/${fields.slug}`
-              }
-              onChange={(e) => {
-                setSlugTouched(true);
-                set("slug", e.target.value);
-              }}
-            />
-          ) : (
-            <Typography variant="body2" color="text.secondary">
-              {/*
-                Changing the slug would break every link already sent out, so
-                it is fixed once an event exists. The API does not accept it on
-                an update either.
-              */}
-              Lives at /events/{event.slug}. The web address cannot be changed
-              once members have the link.
-            </Typography>
-          )}
 
           <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
             <TextField
@@ -369,7 +320,7 @@ export function EventForm({ event }: { event?: ApiEvent }) {
             </Button>
             <Button
               component={Link}
-              href={isNew ? "/events" : `/events/${event.slug}`}
+              href={isNew ? "/events" : `/events/${event.id}`}
               disabled={saving}
             >
               Cancel
