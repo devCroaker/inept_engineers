@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 
 import { Providers } from "@/components/Providers";
+import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 
 import "./globals.css";
@@ -29,6 +30,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <Providers>
           <SiteHeader />
           {children}
+          <SiteFooter />
         </Providers>
       </body>
     </html>
