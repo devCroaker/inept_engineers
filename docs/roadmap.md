@@ -16,20 +16,22 @@ Tracked here rather than in a chat history so it survives and can be reordered.
 | #9  | Events and RSVP API                                  |
 | #10 | Browse events: app shell, list, detail               |
 | #11 | Reply to events, and the attendance roster           |
+| #12 | Create and edit events                               |
+| #13 | Route events by id, drop slugs                       |
+| #14 | Finish routing the event form by id                  |
 
 ## In progress
 
-**Events UI, part three.** The form for creating and editing an event. (This PR.) Parts one and two
-landed in #10 and #11, so this completes the events feature.
+**Privacy policy and terms of service pages.** (This PR.) Written and linked from every page.
+
+Two things remain before this can actually be closed, and neither is writing:
+
+1. **Inbound mail for `privacy@ineptengineers.com`**, which the privacy policy publishes. SES today
+   only sends. Receiving needs either forwarding to a real inbox or a mailbox on the domain.
+2. **Deployment**, because Google verifies that both URLs resolve before it will publish the OAuth
+   app. Until it is published, refresh tokens expire every 7 days and members are signed out weekly.
 
 ## Next
-
-**Privacy policy and terms of service pages.** Two static pages at `/privacy` and `/terms`.
-
-Not cosmetic: **publishing the Google OAuth app requires both URLs to be live and reachable.** Until
-that happens the app stays in Testing mode, where refresh tokens expire every 7 days and members get
-signed out weekly. The pages can be written now, but Google only verifies them once the site is
-deployed, so this is finished by the infrastructure work below rather than before it.
 
 **Infrastructure (CDK).** Certificate, VPC with no NAT Gateway, RDS, API Gateway and Lambda, and
 CloudFront serving the web app with `/api/*` routed to the API. Roughly 18 USD per month.
