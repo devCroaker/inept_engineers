@@ -15,7 +15,7 @@ type State =
   | { status: "ready"; event: ApiEvent };
 
 /** Fetches the event so the form opens with what is already there. */
-export function EditEventLoader({ slug }: { slug: string }) {
+export function EditEventLoader({ id }: { id: string }) {
   const viewerState = useViewer();
   const [state, setState] = useState<State>({ status: "loading" });
 
@@ -31,8 +31,8 @@ export function EditEventLoader({ slug }: { slug: string }) {
       const outcome = await request(
         controller.signal,
         () =>
-          api.GET("/api/events/{slug}", {
-            params: { path: { slug } },
+          api.GET("/api/events/{id}", {
+            params: { path: { id } },
             signal: controller.signal,
           }),
         "Could not load this event.",
@@ -49,7 +49,7 @@ export function EditEventLoader({ slug }: { slug: string }) {
     return () => {
       controller.abort();
     };
-  }, [slug, signedIn]);
+  }, [id, signedIn]);
 
   if (state.status === "loading") {
     return <Skeleton variant="rounded" height={320} />;

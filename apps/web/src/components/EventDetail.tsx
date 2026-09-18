@@ -225,7 +225,7 @@ export function EventDetail({ id }: { id: string }) {
         {canManageEvents(viewerState) ? (
           <Button
             component={Link}
-            href={`/events/${event.slug}/edit`}
+            href={`/events/${event.id}/edit`}
             size="small"
             variant="outlined"
           >

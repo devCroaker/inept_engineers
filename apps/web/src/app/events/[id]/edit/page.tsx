@@ -6,14 +6,14 @@ import { ManagerOnly } from "@/components/ManagerOnly";
 export default async function EditEventPage({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ id: string }>;
 }) {
-  const { slug } = await params;
+  const { id } = await params;
 
   return (
     <Container maxWidth="md" className="py-10">
       <ManagerOnly>
-        <EditEventLoader slug={slug} />
+        <EditEventLoader id={id} />
       </ManagerOnly>
     </Container>
   );
