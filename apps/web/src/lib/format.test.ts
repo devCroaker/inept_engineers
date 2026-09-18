@@ -4,8 +4,10 @@ import {
   formatEventDates,
   formatHeadcount,
   formatPlainDate,
+  fromDateTimeInput,
   isMultiDay,
   toDateInput,
+  toDateTimeInput,
 } from "./format";
 
 // Pinned so the assertions do not depend on the machine running them.
@@ -108,5 +110,20 @@ describe("toDateInput", () => {
     // 11pm on Oct 2 in Los Angeles is already Oct 3 in UTC.
     expect(toDateInput("2026-10-03T06:00:00.000Z", TZ)).toBe("2026-10-02");
     expect(toDateInput("2026-10-03T06:00:00.000Z", "UTC")).toBe("2026-10-03");
+  });
+});
+
+describe("datetime inputs", () => {
+  it("round trips an instant through the input format", () => {
+    // Whatever zone this runs in, what an organiser reads back must be the
+    // moment that was stored, to the minute the input can express.
+    const iso = "2026-10-17T01:30:00.000Z";
+    expect(fromDateTimeInput(toDateTimeInput(iso))).toBe(iso);
+  });
+
+  it("formats as a wall clock, with no zone suffix", () => {
+    expect(toDateTimeInput("2026-10-17T01:30:00.000Z")).toMatch(
+      /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/,
+    );
   });
 });
