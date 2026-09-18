@@ -47,7 +47,6 @@ export function toEventDto(
 ): EventDto {
   return {
     id: event.id,
-    slug: event.slug,
     title: event.title,
     description: event.description,
     kind: event.kind,

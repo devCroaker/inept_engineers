@@ -52,7 +52,6 @@ describe.runIf(hasDb)("events and rsvps", () => {
       .insert(events)
       .values({
         id: eventId,
-        slug: `autumn-war-${suffix}`,
         title: "Autumn War",
         kind: "camping",
         startsAt: new Date("2026-10-01T16:00:00Z"),
@@ -72,7 +71,6 @@ describe.runIf(hasDb)("events and rsvps", () => {
     const cause = await rejection(
       db.insert(events).values({
         id: `bad-dates-${suffix}`,
-        slug: `bad-dates-${suffix}`,
         title: "Time Travel",
         startsAt: new Date("2026-10-04T12:00:00Z"),
         endsAt: new Date("2026-10-01T16:00:00Z"),
@@ -86,7 +84,6 @@ describe.runIf(hasDb)("events and rsvps", () => {
     const cause = await rejection(
       db.insert(events).values({
         id: `bad-kind-${suffix}`,
-        slug: `bad-kind-${suffix}`,
         title: "Mystery",
         kind: "tournament" as unknown as "camping",
         startsAt: new Date("2026-10-01T16:00:00Z"),
@@ -165,7 +162,6 @@ describe.runIf(hasDb)("events and rsvps", () => {
 
     await db.insert(events).values({
       id: throwaway,
-      slug: throwaway,
       title: "Cancelled Thing",
       startsAt: new Date("2026-11-01T18:00:00Z"),
     });
@@ -195,7 +191,6 @@ describe.runIf(hasDb)("events and rsvps", () => {
     });
     await db.insert(events).values({
       id: orphanEvent,
-      slug: orphanEvent,
       title: "Still Happening",
       startsAt: new Date("2026-12-01T18:00:00Z"),
       createdBy: orphanOrganizer,

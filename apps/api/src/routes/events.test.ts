@@ -20,7 +20,9 @@ const app = createRootApp();
 describe.runIf(hasDb)("events API", () => {
   let captain: Awaited<ReturnType<typeof createSignedInMember>>;
   let member: Awaited<ReturnType<typeof createSignedInMember>>;
-  const slug = `autumn-war-${Date.now()}`;
+  // Assigned by the create test: the server generates the id, so the tests
+  // that follow use whatever it gave back rather than a value chosen here.
+  let eventId = "";
 
   beforeAll(async () => {
     captain = await createSignedInMember(app, {
@@ -31,7 +33,9 @@ describe.runIf(hasDb)("events API", () => {
   });
 
   afterAll(async () => {
-    await getDb().delete(events).where(eq(events.slug, slug));
+    if (eventId) {
+      await getDb().delete(events).where(eq(events.id, eventId));
+    }
     await captain.cleanup();
     await member.cleanup();
     await closeDb();
@@ -74,7 +78,6 @@ describe.runIf(hasDb)("events API", () => {
       method: "POST",
       headers: { ...jsonHeaders, cookie: captain.cookie },
       body: JSON.stringify({
-        slug,
         title: "Autumn War",
         kind: "camping",
         startsAt: future(30),
@@ -85,11 +88,15 @@ describe.runIf(hasDb)("events API", () => {
 
     expect(res.status).toBe(201);
     const body = (await res.json()) as {
+      id: string;
       status: string;
       attendance: { yes: number };
     };
+    expect(body.id).toMatch(/^evt_/);
     expect(body.status).toBe("draft");
     expect(body.attendance.yes).toBe(0);
+
+    eventId = body.id;
   });
 
   it("refuses to let a plain member create an event", async () => {
@@ -97,7 +104,6 @@ describe.runIf(hasDb)("events API", () => {
       method: "POST",
       headers: { ...jsonHeaders, cookie: member.cookie },
       body: JSON.stringify({
-        slug: `nope-${Date.now()}`,
         title: "Nope",
         startsAt: future(10),
       }),
@@ -111,14 +117,14 @@ describe.runIf(hasDb)("events API", () => {
     // Reporting 404 keeps the existence of an unannounced event private.
     expect(
       (
-        await app.request(`/api/events/${slug}`, {
+        await app.request(`/api/events/${eventId}`, {
           headers: { cookie: member.cookie },
         })
       ).status,
     ).toBe(404);
     expect(
       (
-        await app.request(`/api/events/${slug}`, {
+        await app.request(`/api/events/${eventId}`, {
           headers: { cookie: captain.cookie },
         })
       ).status,
@@ -128,17 +134,17 @@ describe.runIf(hasDb)("events API", () => {
   it("omits drafts from the member listing but shows them to a captain", async () => {
     const asMember = (await (
       await app.request("/api/events", { headers: { cookie: member.cookie } })
-    ).json()) as { items: { slug: string }[] };
-    expect(asMember.items.map((e) => e.slug)).not.toContain(slug);
+    ).json()) as { items: { id: string }[] };
+    expect(asMember.items.map((e) => e.id)).not.toContain(eventId);
 
     const asCaptain = (await (
       await app.request("/api/events", { headers: { cookie: captain.cookie } })
-    ).json()) as { items: { slug: string }[] };
-    expect(asCaptain.items.map((e) => e.slug)).toContain(slug);
+    ).json()) as { items: { id: string }[] };
+    expect(asCaptain.items.map((e) => e.id)).toContain(eventId);
   });
 
   it("refuses an RSVP to an event the member cannot see", async () => {
-    const res = await app.request(`/api/events/${slug}/rsvp`, {
+    const res = await app.request(`/api/events/${eventId}/rsvp`, {
       method: "PUT",
       headers: { ...jsonHeaders, cookie: member.cookie },
       body: JSON.stringify({ status: "yes", guestCount: 0 }),
@@ -147,14 +153,14 @@ describe.runIf(hasDb)("events API", () => {
   });
 
   it("publishes, then accepts an RSVP and counts guests", async () => {
-    const published = await app.request(`/api/events/${slug}`, {
+    const published = await app.request(`/api/events/${eventId}`, {
       method: "PATCH",
       headers: { ...jsonHeaders, cookie: captain.cookie },
       body: JSON.stringify({ status: "published" }),
     });
     expect(published.status).toBe(200);
 
-    const res = await app.request(`/api/events/${slug}/rsvp`, {
+    const res = await app.request(`/api/events/${eventId}/rsvp`, {
       method: "PUT",
       headers: { ...jsonHeaders, cookie: member.cookie },
       body: JSON.stringify({
@@ -176,7 +182,7 @@ describe.runIf(hasDb)("events API", () => {
   });
 
   it("updates the existing RSVP rather than creating a second", async () => {
-    const res = await app.request(`/api/events/${slug}/rsvp`, {
+    const res = await app.request(`/api/events/${eventId}/rsvp`, {
       method: "PUT",
       headers: { ...jsonHeaders, cookie: member.cookie },
       body: JSON.stringify({ status: "maybe", guestCount: 0 }),
@@ -191,7 +197,7 @@ describe.runIf(hasDb)("events API", () => {
   });
 
   it("lists attendees without any sensitive member data", async () => {
-    const res = await app.request(`/api/events/${slug}/rsvps`, {
+    const res = await app.request(`/api/events/${eventId}/rsvps`, {
       headers: { cookie: member.cookie },
     });
     expect(res.status).toBe(200);
@@ -221,13 +227,13 @@ describe.runIf(hasDb)("events API", () => {
   });
 
   it("refuses an RSVP to a cancelled event", async () => {
-    await app.request(`/api/events/${slug}`, {
+    await app.request(`/api/events/${eventId}`, {
       method: "PATCH",
       headers: { ...jsonHeaders, cookie: captain.cookie },
       body: JSON.stringify({ status: "cancelled" }),
     });
 
-    const res = await app.request(`/api/events/${slug}/rsvp`, {
+    const res = await app.request(`/api/events/${eventId}/rsvp`, {
       method: "PUT",
       headers: { ...jsonHeaders, cookie: member.cookie },
       body: JSON.stringify({ status: "yes", guestCount: 0 }),

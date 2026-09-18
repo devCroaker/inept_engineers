@@ -33,7 +33,7 @@ type State =
   | { status: "error"; message: string; notFound: boolean }
   | { status: "ready"; event: ApiEvent };
 
-export function EventDetail({ slug }: { slug: string }) {
+export function EventDetail({ id }: { id: string }) {
   const viewerState = useViewer();
   const [state, setState] = useState<State>({ status: "loading" });
   // Bumped after a reply is saved, which remounts the roster so it reloads.
@@ -51,8 +51,8 @@ export function EventDetail({ slug }: { slug: string }) {
       const outcome = await request(
         controller.signal,
         () =>
-          api.GET("/api/events/{slug}", {
-            params: { path: { slug } },
+          api.GET("/api/events/{id}", {
+            params: { path: { id } },
             signal: controller.signal,
           }),
         "Could not load this event.",
@@ -73,7 +73,7 @@ export function EventDetail({ slug }: { slug: string }) {
     return () => {
       controller.abort();
     };
-  }, [slug, signedIn]);
+  }, [id, signedIn]);
 
   if (viewerState.status === "loading" || state.status === "loading") {
     return <Skeleton variant="rounded" height={280} />;
@@ -213,7 +213,7 @@ export function EventDetail({ slug }: { slug: string }) {
         </Typography>
         <AttendeeRoster
           key={replyCount}
-          slug={event.slug}
+          eventId={event.id}
           invite={repliesOpen(event)}
         />
       </Box>

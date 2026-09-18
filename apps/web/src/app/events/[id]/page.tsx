@@ -11,13 +11,13 @@ import { EventDetail } from "@/components/EventDetail";
 export default async function EventPage({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ id: string }>;
 }) {
-  const { slug } = await params;
+  const { id } = await params;
 
   return (
     <Container maxWidth="md" className="py-10">
-      <EventDetail slug={slug} />
+      <EventDetail id={id} />
     </Container>
   );
 }

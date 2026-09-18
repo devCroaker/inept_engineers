@@ -38,7 +38,6 @@ export const events = pgTable(
   "events",
   {
     id: text("id").primaryKey(),
-    slug: text("slug").notNull(),
     title: text("title").notNull(),
     /** Markdown. Rendered on the event page. */
     description: text("description"),
@@ -77,7 +76,6 @@ export const events = pgTable(
       .defaultNow(),
   },
   (table) => [
-    uniqueIndex("events_slug_idx").on(table.slug),
     // Drives the main listing: published events, soonest first.
     index("events_status_starts_at_idx").on(table.status, table.startsAt),
     check("events_kind_valid", sql.raw(`kind in (${eventKindValues})`)),

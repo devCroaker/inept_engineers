@@ -5,7 +5,7 @@ import {
   EventListQuerySchema,
   EventListSchema,
   EventSchema,
-  EventSlugParamSchema,
+  EventIdParamSchema,
   UpdateEventSchema,
 } from "@inept/api-contract";
 import { accessContextFor } from "@inept/auth";
@@ -49,12 +49,12 @@ const listEvents = createRoute({
 
 const getEvent = createRoute({
   method: "get",
-  path: "/events/{slug}",
+  path: "/events/{id}",
   tags: ["Events"],
   summary: "Fetch one event",
   security: [{ sessionCookie: [] }],
   middleware: [requireViewer] as const,
-  request: { params: EventSlugParamSchema },
+  request: { params: EventIdParamSchema },
   responses: {
     200: {
       content: { "application/json": { schema: EventSchema } },
@@ -87,19 +87,18 @@ const createEvent = createRoute({
     },
     401: jsonError("Not signed in."),
     403: jsonError("You do not hold a role that can manage events."),
-    409: jsonError("An event already uses that slug."),
   },
 });
 
 const updateEvent = createRoute({
   method: "patch",
-  path: "/events/{slug}",
+  path: "/events/{id}",
   tags: ["Events"],
   summary: "Update an event",
   security: [{ sessionCookie: [] }],
   middleware: [requireViewer] as const,
   request: {
-    params: EventSlugParamSchema,
+    params: EventIdParamSchema,
     body: {
       content: { "application/json": { schema: UpdateEventSchema } },
       required: true,
@@ -171,11 +170,11 @@ export const eventsRouter = new OpenAPIHono<AppEnv>()
 
   .openapi(getEvent, async (c) => {
     const viewer = viewerOf(c);
-    const { slug } = c.req.valid("param");
+    const { id } = c.req.valid("param");
     const db = getDb();
 
     const event = await db.query.events.findFirst({
-      where: eq(events.slug, slug),
+      where: eq(events.id, id),
     });
 
     // A draft is reported as missing rather than forbidden, so its existence is
@@ -187,10 +186,7 @@ export const eventsRouter = new OpenAPIHono<AppEnv>()
       (event.status === "draft" &&
         !canViewUnpublishedEvents(accessContextFor(viewer)))
     ) {
-      return c.json(
-        errorBody("not_found", `No event with slug "${slug}".`),
-        404,
-      );
+      return c.json(errorBody("not_found", `No event with id "${id}".`), 404);
     }
 
     const forEvent = await db
@@ -217,16 +213,8 @@ export const eventsRouter = new OpenAPIHono<AppEnv>()
     const body = c.req.valid("json");
     const db = getDb();
 
-    const existing = await db.query.events.findFirst({
-      where: eq(events.slug, body.slug),
-    });
-    if (existing) {
-      return c.json(
-        errorBody("conflict", `An event already uses "${body.slug}".`),
-        409,
-      );
-    }
-
+    // No uniqueness to check: the id is generated here, so two events with the
+    // same title are simply two events.
     const [created] = await db
       .insert(events)
       .values({
@@ -251,18 +239,15 @@ export const eventsRouter = new OpenAPIHono<AppEnv>()
       return c.json(errorBody("forbidden", "You cannot edit events."), 403);
     }
 
-    const { slug } = c.req.valid("param");
+    const { id } = c.req.valid("param");
     const { startsAt, endsAt, ...rest } = c.req.valid("json");
     const db = getDb();
 
     const event = await db.query.events.findFirst({
-      where: eq(events.slug, slug),
+      where: eq(events.id, id),
     });
     if (!event) {
-      return c.json(
-        errorBody("not_found", `No event with slug "${slug}".`),
-        404,
-      );
+      return c.json(errorBody("not_found", `No event with id "${id}".`), 404);
     }
 
     const [updated] = await db
