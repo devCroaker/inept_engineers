@@ -25,8 +25,7 @@ export const AttendanceSummarySchema = z
 
 export const EventSchema = z
   .object({
-    id: z.string(),
-    slug: z.string().openapi({ example: "autumn-war" }),
+    id: z.string().openapi({ example: "evt_4f2a9c1b8e7d6a5c3b2f1" }),
     title: z.string().openapi({ example: "Autumn War" }),
     description: z.string().nullable(),
     kind: EventKindSchema,
@@ -73,13 +72,6 @@ export const EventListSchema = z
 
 export const CreateEventSchema = z
   .object({
-    slug: z
-      .string()
-      .min(1)
-      .regex(
-        /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
-        "Must be a lowercase hyphenated slug",
-      ),
     title: z.string().min(1),
     description: z.string().nullish(),
     kind: EventKindSchema.default("other"),
@@ -93,9 +85,8 @@ export const CreateEventSchema = z
   })
   .openapi("CreateEvent");
 
-export const UpdateEventSchema = CreateEventSchema.partial()
-  .omit({ slug: true })
-  .openapi("UpdateEvent");
+export const UpdateEventSchema =
+  CreateEventSchema.partial().openapi("UpdateEvent");
 
 export const UpsertRsvpSchema = z
   .object({
@@ -125,11 +116,14 @@ export const AttendeeListSchema = z
   .object({ items: z.array(AttendeeSchema), total: z.number().int() })
   .openapi("AttendeeList");
 
-export const EventSlugParamSchema = z.object({
-  slug: z
+export const EventIdParamSchema = z.object({
+  id: z
     .string()
     .min(1)
-    .openapi({ param: { name: "slug", in: "path" }, example: "autumn-war" }),
+    .openapi({
+      param: { name: "id", in: "path" },
+      example: "evt_4f2a9c1b8e7d6a5c3b2f1",
+    }),
 });
 
 export type Event = z.infer<typeof EventSchema>;

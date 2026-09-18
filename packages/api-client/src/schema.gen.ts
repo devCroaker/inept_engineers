@@ -175,15 +175,6 @@ export interface paths {
                         "application/json": components["schemas"]["Error"];
                     };
                 };
-                /** @description An event already uses that slug. */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
             };
         };
         delete?: never;
@@ -192,7 +183,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/events/{slug}": {
+    "/api/events/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -205,7 +196,7 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    slug: string;
+                    id: string;
                 };
                 cookie?: never;
             };
@@ -251,7 +242,7 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    slug: string;
+                    id: string;
                 };
                 cookie?: never;
             };
@@ -301,7 +292,7 @@ export interface paths {
         };
         trace?: never;
     };
-    "/api/events/{slug}/rsvp": {
+    "/api/events/{id}/rsvp": {
         parameters: {
             query?: never;
             header?: never;
@@ -318,7 +309,7 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    slug: string;
+                    id: string;
                 };
                 cookie?: never;
             };
@@ -373,7 +364,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/events/{slug}/rsvps": {
+    "/api/events/{id}/rsvps": {
         parameters: {
             query?: never;
             header?: never;
@@ -389,7 +380,7 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    slug: string;
+                    id: string;
                 };
                 cookie?: never;
             };
@@ -486,9 +477,8 @@ export interface components {
             offset: number;
         };
         Event: {
+            /** @example evt_4f2a9c1b8e7d6a5c3b2f1 */
             id: string;
-            /** @example autumn-war */
-            slug: string;
             /** @example Autumn War */
             title: string;
             description: string | null;
@@ -531,7 +521,6 @@ export interface components {
         /** @enum {string} */
         RsvpStatus: "yes" | "no" | "maybe";
         CreateEvent: {
-            slug: string;
             title: string;
             description?: string | null;
             kind?: components["schemas"]["EventKind"];

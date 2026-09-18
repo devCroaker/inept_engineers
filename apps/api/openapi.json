@@ -228,11 +228,8 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "string"
-          },
-          "slug": {
             "type": "string",
-            "example": "autumn-war"
+            "example": "evt_4f2a9c1b8e7d6a5c3b2f1"
           },
           "title": {
             "type": "string",
@@ -341,7 +338,6 @@
         },
         "required": [
           "id",
-          "slug",
           "title",
           "description",
           "kind",
@@ -411,11 +407,6 @@
       "CreateEvent": {
         "type": "object",
         "properties": {
-          "slug": {
-            "type": "string",
-            "minLength": 1,
-            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
-          },
           "title": {
             "type": "string",
             "minLength": 1
@@ -471,7 +462,6 @@
           }
         },
         "required": [
-          "slug",
           "title",
           "startsAt"
         ]
@@ -834,21 +824,11 @@
                 }
               }
             }
-          },
-          "409": {
-            "description": "An event already uses that slug.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
           }
         }
       }
     },
-    "/api/events/{slug}": {
+    "/api/events/{id}": {
       "get": {
         "tags": [
           "Events"
@@ -864,10 +844,10 @@
             "schema": {
               "type": "string",
               "minLength": 1,
-              "example": "autumn-war"
+              "example": "evt_4f2a9c1b8e7d6a5c3b2f1"
             },
             "required": true,
-            "name": "slug",
+            "name": "id",
             "in": "path"
           }
         ],
@@ -919,10 +899,10 @@
             "schema": {
               "type": "string",
               "minLength": 1,
-              "example": "autumn-war"
+              "example": "evt_4f2a9c1b8e7d6a5c3b2f1"
             },
             "required": true,
-            "name": "slug",
+            "name": "id",
             "in": "path"
           }
         ],
@@ -980,7 +960,7 @@
         }
       }
     },
-    "/api/events/{slug}/rsvp": {
+    "/api/events/{id}/rsvp": {
       "put": {
         "tags": [
           "Events"
@@ -997,10 +977,10 @@
             "schema": {
               "type": "string",
               "minLength": 1,
-              "example": "autumn-war"
+              "example": "evt_4f2a9c1b8e7d6a5c3b2f1"
             },
             "required": true,
-            "name": "slug",
+            "name": "id",
             "in": "path"
           }
         ],
@@ -1058,7 +1038,7 @@
         }
       }
     },
-    "/api/events/{slug}/rsvps": {
+    "/api/events/{id}/rsvps": {
       "get": {
         "tags": [
           "Events"
@@ -1075,10 +1055,10 @@
             "schema": {
               "type": "string",
               "minLength": 1,
-              "example": "autumn-war"
+              "example": "evt_4f2a9c1b8e7d6a5c3b2f1"
             },
             "required": true,
-            "name": "slug",
+            "name": "id",
             "in": "path"
           }
         ],

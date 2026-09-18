@@ -76,8 +76,8 @@ export function RsvpControl({
     const outcome = await request(
       controller.signal,
       () =>
-        api.PUT("/api/events/{slug}/rsvp", {
-          params: { path: { slug: event.slug } },
+        api.PUT("/api/events/{id}/rsvp", {
+          params: { path: { id: event.id } },
           body: {
             status,
             guestCount,

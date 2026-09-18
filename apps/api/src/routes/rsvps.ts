@@ -3,7 +3,7 @@ import {
   AttendeeListSchema,
   ErrorSchema,
   EventSchema,
-  EventSlugParamSchema,
+  EventIdParamSchema,
   UpsertRsvpSchema,
 } from "@inept/api-contract";
 import { accessContextFor } from "@inept/auth";
@@ -28,7 +28,7 @@ const jsonError = (description: string) => ({
 
 const upsertRsvp = createRoute({
   method: "put",
-  path: "/events/{slug}/rsvp",
+  path: "/events/{id}/rsvp",
   tags: ["Events"],
   summary: "Create or change your own RSVP",
   description:
@@ -37,7 +37,7 @@ const upsertRsvp = createRoute({
   security: [{ sessionCookie: [] }],
   middleware: [requireViewer] as const,
   request: {
-    params: EventSlugParamSchema,
+    params: EventIdParamSchema,
     body: {
       content: { "application/json": { schema: UpsertRsvpSchema } },
       required: true,
@@ -56,7 +56,7 @@ const upsertRsvp = createRoute({
 
 const listAttendees = createRoute({
   method: "get",
-  path: "/events/{slug}/rsvps",
+  path: "/events/{id}/rsvps",
   tags: ["Events"],
   summary: "Who is coming",
   description:
@@ -64,7 +64,7 @@ const listAttendees = createRoute({
     "contact, dietary, or medical information; those have narrower audiences and their own endpoints.",
   security: [{ sessionCookie: [] }],
   middleware: [requireViewer] as const,
-  request: { params: EventSlugParamSchema },
+  request: { params: EventIdParamSchema },
   responses: {
     200: {
       content: { "application/json": { schema: AttendeeListSchema } },
@@ -78,12 +78,12 @@ const listAttendees = createRoute({
 export const rsvpsRouter = new OpenAPIHono<AppEnv>()
   .openapi(upsertRsvp, async (c) => {
     const viewer = viewerOf(c);
-    const { slug } = c.req.valid("param");
+    const { id } = c.req.valid("param");
     const body = c.req.valid("json");
     const db = getDb();
 
     const event = await db.query.events.findFirst({
-      where: eq(events.slug, slug),
+      where: eq(events.id, id),
     });
     if (
       !event ||
@@ -93,10 +93,7 @@ export const rsvpsRouter = new OpenAPIHono<AppEnv>()
       (event.status === "draft" &&
         !canViewUnpublishedEvents(accessContextFor(viewer)))
     ) {
-      return c.json(
-        errorBody("not_found", `No event with slug "${slug}".`),
-        404,
-      );
+      return c.json(errorBody("not_found", `No event with id "${id}".`), 404);
     }
 
     if (event.status === "cancelled") {
@@ -152,11 +149,11 @@ export const rsvpsRouter = new OpenAPIHono<AppEnv>()
 
   .openapi(listAttendees, async (c) => {
     const viewer = viewerOf(c);
-    const { slug } = c.req.valid("param");
+    const { id } = c.req.valid("param");
     const db = getDb();
 
     const event = await db.query.events.findFirst({
-      where: eq(events.slug, slug),
+      where: eq(events.id, id),
     });
     if (
       !event ||
@@ -166,10 +163,7 @@ export const rsvpsRouter = new OpenAPIHono<AppEnv>()
       (event.status === "draft" &&
         !canViewUnpublishedEvents(accessContextFor(viewer)))
     ) {
-      return c.json(
-        errorBody("not_found", `No event with slug "${slug}".`),
-        404,
-      );
+      return c.json(errorBody("not_found", `No event with id "${id}".`), 404);
     }
 
     // Only the columns the roster needs. Nothing from member_contact,

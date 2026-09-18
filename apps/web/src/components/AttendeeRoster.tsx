@@ -33,10 +33,10 @@ const ORDER: RsvpStatus[] = ["yes", "maybe", "no"];
  * stores, so nothing sensitive can reach this list.
  */
 export function AttendeeRoster({
-  slug,
+  eventId,
   invite,
 }: {
-  slug: string;
+  eventId: string;
   /** Whether replies are still open, which decides what an empty list says. */
   invite: boolean;
 }) {
@@ -50,8 +50,8 @@ export function AttendeeRoster({
       const outcome = await request(
         controller.signal,
         () =>
-          api.GET("/api/events/{slug}/rsvps", {
-            params: { path: { slug } },
+          api.GET("/api/events/{id}/rsvps", {
+            params: { path: { id: eventId } },
             signal: controller.signal,
           }),
         "Could not load who is coming.",
@@ -68,7 +68,7 @@ export function AttendeeRoster({
     return () => {
       controller.abort();
     };
-  }, [slug]);
+  }, [eventId]);
 
   if (state.status === "loading") {
     return <Skeleton variant="rounded" height={140} />;

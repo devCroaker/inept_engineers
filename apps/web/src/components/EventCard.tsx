@@ -32,7 +32,7 @@ export function EventCard({ event }: { event: ApiEvent }) {
 
   return (
     <Card variant="outlined">
-      <CardActionArea component={Link} href={`/events/${event.slug}`}>
+      <CardActionArea component={Link} href={`/events/${event.id}`}>
         <Stack spacing={1.5} className="p-5">
           <Stack
             direction="row"
